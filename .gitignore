@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+access_key.rds
+secret_key.rds

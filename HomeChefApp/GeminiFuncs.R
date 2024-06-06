@@ -195,6 +195,34 @@ fileInputArea <- function(inputId, label, multiple = FALSE, accept = NULL,
   )
 }
 
+saveRecipe <- function(session, name, ingredients, instructions){
+  session$sendCustomMessage("saveRecipe",list(name = name, ingredients = ingredients, instructions = instructions))
+}
+
+getRecipes <- function(session, message){
+  session$sendCustomMessage("getRecipes", list(message = 'hi'))
+}
+
+# Function to add a new text input
+addIngredient <- function(rv) {
+  rv$num_ingredients <- rv$num_ingredients + 1
+  insertUI(
+    selector = "#submitIngredients", 
+    where = "beforeBegin", 
+    ui = textInput(
+      paste0("ingredient_", rv$num_ingredients), 
+      label = paste("Ingredient", rv$num_ingredients), 
+      value = ""
+    )
+  )
+}
+
+# Function to remove the last text input
+removeIngredient <- function(rv) {
+  removeUI(selector = paste0("#ingredient_", rv$num_ingredients))
+  rv$num_ingredients <- rv$num_ingredients - 1
+}
+
 
 
 
