@@ -4,7 +4,6 @@ library(shiny.pwa)
 library(shinyWidgets)
 library(bslib)
 library(stringr)
-library(shinybusy)
 library(shinyjs)
 library(shinyalert)
 library(aws.s3)
@@ -48,18 +47,47 @@ html, body {
   overflow-x: hidden;
 }
 
-  #loading-screen {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: white;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: #007aff;
-  }
+#loading-screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #007aff;
+}
+
+.btn-danger-custom {
+  background-color: red !important;
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.btn-danger-custom:hover {
+  background-color: darkred !important;
+}
+
+.btn-primary-custom {
+  background-color: lightgreen !important;
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.btn-primary-custom:hover {
+  background-color: darkgreen !important;
+}
+
+
+  
     ')),
     # Include custom JavaScript to hide the loading screen once the app is fully loaded
     tags$script(HTML("
@@ -75,13 +103,16 @@ html, body {
   
   theme = bslib::bs_theme(preset = 'darkly',
                           primary = 'blue',
-                          secondary = 'black') %>%
+                          secondary = 'black',
+                          success = 'lightgreen',
+                          warning = 'orange',
+                          danger = 'red') %>%
     bs_add_rules('
     
 
-
+        
 .card {
-  background-color: rgba(80, 80, 80, 0.7); /* Transparent grey */;
+  background-color: rgba(80, 80, 80, 0.7); /* Transparent grey */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   padding: 20px;
@@ -115,35 +146,35 @@ html, body {
 }
 
 .btn-primary {
-  background-color: #007aff;
-  border: none;
-  border-radius: 10px;
-  color: white;
-  padding: 10px 20px;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
+  background-color: #007aff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: white !important;
+  padding: 10px 20px !important;
+  font-size: 16px !important;
+  transition: background-color 0.3s ease !important;
 }
 
 .btn-primary:hover {
-  background-color: #005bb5;
+  background-color: #005bb5 !important;
 }
 
 .shiny-input-container {
-  margin-bottom: 20px;
+  margin-bottom: 20px !important;
 }
 
 .input-shadow {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 10px !important;
 }
 
 .tab-content > .tab-pane {
-  display: none;
+  display: none !important;
 }
 
 .tab-content > .active {
-  display: block;
-  animation: slideInFromBottom 0.5s forwards;
+  display: block !important;
+  animation: slideInFromBottom 0.5s forwards !important;
 }
 
 @keyframes slideInFromBottom {
@@ -158,61 +189,61 @@ html, body {
 }
 
 .navbar {
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #e7e7e7;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
+  background-color: #f8f8f8 !important;
+  border-bottom: 1px solid #e7e7e7 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) !important;
+  padding: 10px 20px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  position: relative !important;
 }
 
 .navbar-brand {
   color: #007aff !important;
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 20px !important;
+  font-weight: bold !important;
 }
 
 .navbar-nav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex: 1 !important;
 }
 
 .navbar-nav > li {
-  text-align: center;
+  text-align: center !important;
 }
 
 .navbar-nav > li > a {
   color: #007aff !important;
-  font-size: 18px;
-  display: block;
-  padding: 14px;
+  font-size: 18px !important;
+  display: block !important;
+  padding: 14px !important;
 }
 
 .navbar-collapse {
-  display: flex;
-  justify-content: space-around;
-  padding-right: 10px;
-  padding-left: 10px;
+  display: flex !important;
+  justify-content: space-around !important;
+  padding-right: 10px !important;
+  padding-left: 10px !important;
 }
 
-#card1, #card2, #card3, #card4, #saveButton {
-  display: none;
-}
 
 .logo-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  display: flex !important;
+  justify-content: center !important;
+  margin-top: 20px !important;
 }
 
 .logo {
-  height: 100px;
-  width: auto;
+  height: 100px !important;
+  width: auto !important;
 }
+
+
+
 
 
     '),
@@ -365,6 +396,11 @@ html, body {
 # ---- Define server logic ----
 server <- function(input, output, session) {
   
+  shinyjs::hide("card1")
+  shinyjs::hide('card2')
+  shinyjs::hide('card3')
+  shinyjs::hide('card4')
+  
   
   
   rv = reactiveValues(username = character(),
@@ -443,19 +479,27 @@ server <- function(input, output, session) {
       
       path = input$imageInput$datapath
       
-      vision_prompt = paste0("Please accurately list the ingredients in this picture. Your response should be in the format: *(ingredient)*")
+      vision_prompt = paste0("Please accurately list the ingredients in this picture. Your response should be in the format: *(ingredient)* and end the response with *END*")
       vision_response = gemini_vision(vision_prompt, path)
       
-      vision_response = gemini_vision(vision_prompt, "C:/Users/xbox/Pictures/food.jpg")
       
-      ingredients_ind = str_match_all(string = vision_response, pattern = "\\*\\s(.*)\\n")[[1]][,2]
+      # vision_response = gemini_vision(vision_prompt, "C:/Users/xbox/Pictures/food.jpg")
+      
+      print(vision_response)
+      
+      
+      ingredients_ind = str_match_all(string = vision_response, pattern = "\\*\\s(.*)\\n|\\* (.+?)\\*END")[[1]][,2]
+      ingredients_for_mod = paste(ingredients_ind, collapse = ", ")
+      print(ingredients_for_mod)
 
       rv$num_ingredients = length(ingredients_ind)
       
       
-      ingredient_inputs = lapply(seq_along(ingredients_ind), function(i){
-        textInput(paste0('ingredient_',i), label = paste("Ingredient",i), value = ingredients_ind[i])
-      })
+      # ingredient_inputs = lapply(seq_along(ingredients_ind), function(i){
+      #   textInput(paste0('ingredient_',i), label = paste("Ingredient",i), value = ingredients_ind[i])
+      # })
+      
+      # rv$ingredient_inputs = ingredient_inputs
       
       shinybusy::remove_modal_spinner()
       # Show the dynamic inputs in a shinyalert modal
@@ -464,16 +508,27 @@ server <- function(input, output, session) {
         html = TRUE,
         text = tagList(
           div(
+            style = 'display: flex; flex-direction: column;',
+            imageOutput('imgOut'),
             p("Please confirm or correct the ingredients:"),
-            do.call(tagList, ingredient_inputs),
-            actionButton(inputId = 'submitIngredients', label = 'Submit!'),
-            actionButton(inputId = "addIngredientBtn", label = 'add'),
-            actionButton(inputId = 'removeIngredient', label = 'remove')
+            textAreaInput(inputId = 'updatedIngredients', label = "", value = ingredients_for_mod, rows = 10),
+            actionButton(inputId = 'submitIngredients', label = 'Submit!', class = 'btn-primary-custom'),
+            actionButton(inputId = 'cancel', label = "Cancel", class = 'btn-danger-custom')
+            # actionButton(inputId = "addIngredientBtn", label = 'add'),
+            # actionButton(inputId = 'removeIngredient', label = 'remove')
           )
         ),
         size = "l",
         showConfirmButton = FALSE
       )
+      
+      output$imgOut = renderImage({
+        list(
+          src = path,
+          width = "300px",
+          height = "300px"
+        )
+      }, deleteFile = FALSE)
     }else{
       
     }
@@ -484,12 +539,13 @@ server <- function(input, output, session) {
   
   observeEvent(input$submitIngredients, {
     # Retrieve the values of all text inputs
-    ingredient_values <- lapply(seq_along(ingredients_ind), function(i) {
-      input[[paste0('ingredient_', i)]]
-    })
+    # ingredient_values <- lapply(seq_along(ingredients_ind), function(i) {
+    #   input[[paste0('ingredient_', i)]]
+    # })
     
     # You can now use ingredient_values for further processing
-    ingredients = (paste(ingredient_values, collapse = ", "))
+    # ingredients = (paste(ingredient_values, collapse = ", "))
+    ingredients = input$updatedIngredients
     
     shinybusy::show_modal_spinner(spin = 'semipolar',
                                   color = 'white',
@@ -519,35 +575,24 @@ server <- function(input, output, session) {
     
     print(recipe_response)
     
-    nutrition_prompt = paste0("Based on the ingredients and amount of ingredients used here: ",
-                              paste(recipe_ingredients, collapse = ", "),
-                              ". Can you please give me an esimate amount of how many calories, ",
-                              "protein, carbs and fat are in a serving of this meal.",
-                              " Format your response as follows: ",
-                              "\\n **TOTAL CALORIES:** (total calories in meal)\\n",
-                              "\\n **TOTAL PROTEIN:** (total protein in meal)\\n",
-                              "\\n **TOTAL CARBS:** (total carbs in meal)\\n",
-                              "\\n **TOTAL FAT:** (total fat in meal)\\n",
-                              "** Disclaimer: **",
-                              "Please end the disclaimer with '\\nEND")
-    
-    nutrition_response = gemini(nutrition_prompt)
-    
-    print(nutrition_response)
+    nutrition_info = GetNutrition(recipe_ingredients)
     
     
-    # nutrition_individual = str_match_all(string = nutrition_response, pattern = "\\* (.*?\\(.*?\\))")[[1]][,2]
-    nutrition_total_calories = trimws(str_match(string = nutrition_response, pattern = "TOTAL CALORIES:\\*\\*(.*)\\n")[,2])
-    nutrition_total_protein = trimws(str_match(string = nutrition_response, pattern = "TOTAL PROTEIN:\\*\\*(.*?)\\n")[,2])
-    nutrition_total_carbs = trimws(str_match(string = nutrition_response, pattern = "TOTAL CARBS:\\*\\*(.*?)\\n")[,2])
-    nutrition_total_fats = trimws(str_match(string = nutrition_response, pattern = "TOTAL FAT:\\*\\*(.*?)\\n")[,2])
+    if(any(is.na(c(nutrition_info$nutrition_total_calories,
+                   nutrition_info$nutrition_total_protein,
+                   nutrition_info$nutrition_total_fats,
+                   nutrition_info$nutrition_total_carbs)))){
+
+      stop('something went wrong nutrition')
+      
+    }
     
+    print('made it line 589')
     
-    total_cal_text = paste0("Calorie Estimate: ", nutrition_total_calories)
-    total_protein_text = paste0("Protein Estimate: ", nutrition_total_protein)
-    total_carb_text = paste0("Carb Estimate: ", nutrition_total_carbs)
-    total_fat_text = paste0('Fats Estimate: ', nutrition_total_fats)
-    
+    total_cal_text = paste0("Calorie Estimate: ", nutrition_info$nutrition_total_calories)
+    total_protein_text = paste0("Protein Estimate: ", nutrition_info$nutrition_total_protein)
+    total_carb_text = paste0("Carb Estimate: ", nutrition_info$nutrition_total_carbs)
+    total_fat_text = paste0('Fats Estimate: ', nutrition_info$nutrition_total_fats)
     estimates_text = c(total_cal_text, total_protein_text, total_carb_text, total_fat_text)
     
     output$recipeName = renderText(recipe_name)
@@ -581,7 +626,6 @@ server <- function(input, output, session) {
     
     shinybusy::remove_modal_spinner()
     
-    
     shinyjs::show('card1')
     shinyjs::show('card2')
     shinyjs::show('card3')
@@ -596,77 +640,25 @@ server <- function(input, output, session) {
     
     
     
-    nutrition_disclaimer = trimws(str_match(string = nutrition_response, pattern = "Disclaimer:\\*\\*(.*?)\\n\\nEND")[,2])
+    # nutrition_disclaimer = trimws(str_match(string = nutrition_response, pattern = "Disclaimer:\\*\\*(.*?)\\n\\nEND")[,2])
+    
+    # recipe_list = list(
+    #   name = recipe$name,
+    #   ingredients = recipe_ingredients,
+    #   instructions = recipe_instructions,
+    #   estimates = estimates_text
+    # )
+    
+    
   })
   
-  # observeEvent(input$saveButton, {
-  #   saveRecipe(session, recipe$name, recipe$ingredients, recipe$instructions)
-  #   print('recipe saved')
-  # })
-  # 
-  # observeEvent(input$loadButton, {
-  #   getRecipes(session, 'hi')
-  # })
-  # 
-  # output$savedRecipes = renderPrint({
-  #   response = input$jsResponse
-  #   if(!is.null(response)){
-  #     response
-  #   }else{
-  #     
-  #   }
-  #   
-  # })
   
   observeEvent(input$clearCookieBtn, {
     session$sendCustomMessage(type = "clearCookie", list(name = "username"))
     shinyjs::hide('mainPage')
     shinyjs::show('loginPage')
   })
-  
-  # Function to add a new ingredient input
-  observeEvent(input$addIngredientBtn, {
-    new_input_id <- paste0("ingredient_", length(ingredient_inputs) + 1)
-    new_input <- textInput(new_input_id, label = paste("Ingredient", length(ingredient_inputs) + 1), value = "")
-    ingredient_inputs <<- c(ingredient_inputs, list(new_input))
-    shinyalert(
-      title = "Confirm Ingredients",
-      html = TRUE,
-      text = tagList(
-        div(
-          p("Please confirm or correct the ingredients:"),
-          do.call(tagList, ingredient_inputs),
-          actionButton(inputId = 'submitIngredients', label = 'Submit!'),
-          actionButton(inputId = "addIngredientBtn", label = 'Add'),
-          actionButton(inputId = 'removeIngredient', label = 'Remove')
-        )
-      ),
-      size = "l",
-      showConfirmButton = FALSE
-    )
-  })
-  
-  # Function to remove the last ingredient input
-  observeEvent(input$removeIngredient, {
-    if (length(ingredient_inputs) > 1) {
-      ingredient_inputs <<- ingredient_inputs[-length(ingredient_inputs)]
-      shinyalert(
-        title = "Confirm Ingredients",
-        html = TRUE,
-        text = tagList(
-          div(
-            p("Please confirm or correct the ingredients:"),
-            do.call(tagList, ingredient_inputs),
-            actionButton(inputId = 'submitIngredients', label = 'Submit!'),
-            actionButton(inputId = "addIngredientBtn", label = 'Add'),
-            actionButton(inputId = 'removeIngredient', label = 'Remove')
-          )
-        ),
-        size = "l",
-        showConfirmButton = FALSE
-      )
-    }
-  })
+
   
   
   

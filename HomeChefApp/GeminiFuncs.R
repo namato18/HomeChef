@@ -223,6 +223,51 @@ removeIngredient <- function(rv) {
   rv$num_ingredients <- rv$num_ingredients - 1
 }
 
+extract_nutrition <- function(nutrition_response, nutrient) {
+  pattern <- paste0(nutrient, ":\\*\\*(.*?)\\\\|", nutrient, ":\\*\\*(.*?)\\n")
+  match <- str_match(nutrition_response, pattern)
+  value <- ifelse(!is.na(match[,2]), match[,2], match[,3])
+  trimws(value)
+}
+
+# Nutrition info function
+GetNutrition <- function(recipe_ingredients){
+  nutrition_prompt = paste0("Based on the ingredients and amount of ingredients used here: ",
+                            paste(recipe_ingredients, collapse = ", "),
+                            ". Can you please give me an esimate amount of how many calories, ",
+                            "protein, carbs and fat are in a serving of this meal.",
+                            " Format your response as follows: ",
+                            "\\n **TOTAL CALORIES:** (total calories in meal)\\n",
+                            "\\n **TOTAL PROTEIN:** (total protein in meal)\\n",
+                            "\\n **TOTAL CARBS:** (total carbs in meal)\\n",
+                            "\\n **TOTAL FAT:** (total fat in meal)\\n",
+                            "** Disclaimer: **",
+                            "Please end the disclaimer with '\\nEND")
+  
+  nutrition_response = gemini(nutrition_prompt)
+  
+  print(nutrition_response)
+  
+  
+  # nutrition_individual = str_match_all(string = nutrition_response, pattern = "\\* (.*?\\(.*?\\))")[[1]][,2]
+  # nutrition_total_calories = trimws(str_match(string = nutrition_response, pattern = "TOTAL CALORIES:\\*\\*(.*?)\\\\")[,2])
+  # nutrition_total_protein = trimws(str_match(string = nutrition_response, pattern = "TOTAL PROTEIN:\\*\\*(.*?)\\\\")[,2])
+  # nutrition_total_carbs = trimws(str_match(string = nutrition_response, pattern = "TOTAL CARBS:\\*\\*(.*?)\\\\")[,2])
+  # nutrition_total_fats = trimws(str_match(string = nutrition_response, pattern = "TOTAL FAT:\\*\\*(.*?)\\\\")[,2])
+  
+  to.return = list(
+    nutrition_total_calories = extract_nutrition(nutrition_response, "TOTAL CALORIES"),
+    nutrition_total_protein = extract_nutrition(nutrition_response, "TOTAL PROTEIN"),
+    nutrition_total_carbs = extract_nutrition(nutrition_response, "TOTAL CARBS"),
+    nutrition_total_fats = extract_nutrition(nutrition_response, "TOTAL FAT")
+  )
+  
+  
+  print('exiting function nutrition')
+  
+  return(to.return)
+}
+
 
 
 
