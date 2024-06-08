@@ -7,6 +7,7 @@ library(stringr)
 library(shinyjs)
 library(shinyalert)
 library(aws.s3)
+library(shinydisconnect)
 
 access_key = readRDS('access_key.rds')
 secret_key = readRDS("secret_key.rds")
@@ -25,6 +26,10 @@ source('icon.R')
 # Define UI for application
 ui <- fluidPage(
   useShinyjs(),
+  
+  disconnectMessage(text = "Connection timed out! Please refresh the page (recipes saved)",
+                    refresh = "Refresh",
+                    top = 'center'),
   
   tags$script(src = 'recipeFunctions.js'),
   tags$script(src = 'cookie-handler.js'),
@@ -74,7 +79,7 @@ html, body {
 }
 
 .btn-primary-custom {
-  background-color: lightgreen !important;
+  background-color: blue !important;
   color: white !important;
   border: none;
   border-radius: 10px;
@@ -83,7 +88,56 @@ html, body {
   transition: background-color 0.3s ease;
 }
 .btn-primary-custom:hover {
-  background-color: darkgreen !important;
+  background-color: darkblue !important;
+}
+
+.btn-primary-custom-full {
+  background-color: #206ef5 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 25px !important;
+  width: 100% !important;
+  padding: 15px !important;
+  font-size: 18px !important;
+  margin-bottom: 10px !important;
+}
+.btn-primary-custom-full:hover {
+  background-color: #144599 !important;
+}
+
+/* New styles for bottom bar and buttons */
+.navbar-fixed-bottom .navbar-collapse {
+  background-color: #007aff;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  padding: 0;
+}
+
+.navbar-fixed-bottom .navbar-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch; /* Ensure items stretch to fill the container height */
+  width: 100%;
+}
+
+.navbar-fixed-bottom .navbar-nav > li {
+  flex: 1;
+  text-align: center; /* Center the text within each button */
+}
+
+.navbar-fixed-bottom .navbar-nav > li > a {
+  color: white !important;
+  font-size: 16px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-fixed-bottom .navbar-nav > li > a:hover {
+  background-color: #005bb5;
+  border-radius: 10px;
 }
 
 
@@ -93,7 +147,8 @@ html, body {
     tags$script(HTML("
     $(document).on('shiny:connected', function() {
       $('#loading-screen').fadeOut('slow', function() {
-        $('html, body').css('overflow', 'auto'); /* Enable scrolling after loading */
+        $('html, body').css('overflow-y', 'auto'); /* Enable scrolling in y-direction */
+        $('html, body').css('overflow-x', 'hidden'); /* Ensure x-direction scrolling is hidden */
       });
     });
     "))
@@ -102,13 +157,12 @@ html, body {
   # shinybusy::add_busy_spinner(spin = 'semipolar', color = 'white', position = 'full-page'),
   
   theme = bslib::bs_theme(preset = 'darkly',
-                          primary = 'blue',
-                          secondary = 'black',
+                          primary = '#007aff',
+                          secondary = 'white',
                           success = 'lightgreen',
                           warning = 'orange',
                           danger = 'red') %>%
     bs_add_rules('
-    
 
         
 .card {
@@ -188,49 +242,6 @@ html, body {
   }
 }
 
-.navbar {
-  background-color: #f8f8f8 !important;
-  border-bottom: 1px solid #e7e7e7 !important;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) !important;
-  padding: 10px 20px !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  position: relative !important;
-}
-
-.navbar-brand {
-  color: #007aff !important;
-  font-size: 20px !important;
-  font-weight: bold !important;
-}
-
-.navbar-nav {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  flex: 1 !important;
-}
-
-.navbar-nav > li {
-  text-align: center !important;
-}
-
-.navbar-nav > li > a {
-  color: #007aff !important;
-  font-size: 18px !important;
-  display: block !important;
-  padding: 14px !important;
-}
-
-.navbar-collapse {
-  display: flex !important;
-  justify-content: space-around !important;
-  padding-right: 10px !important;
-  padding-left: 10px !important;
-}
-
-
 .logo-container {
   display: flex !important;
   justify-content: center !important;
@@ -241,6 +252,9 @@ html, body {
   height: 100px !important;
   width: auto !important;
 }
+
+
+
 
 
 
@@ -260,132 +274,178 @@ html, body {
   div(id = 'loading-screen', 'Loading...'),
   div(class = 'logo-container', tags$img(src = 'chef-white-ring-removebg.png', class = 'logo')),
   
-  hidden(div(id = "loginPage",
-             h2("Welcome!"),
-             hr(),
-             fluidRow(
-               column(width = 4, offset = 4,
-                      paste0("Since this is your first time here, you just need to create a username!",
-                             " This will allow you to save your recipes and re-use them if you'd like to!"),
-               ),
-               hr(),
-               strong('(You only need to do this once)')
-             ),
-             textInput("username", "Enter your username:"),
-             actionButton("loginBtn", "Login"),
-             align = 'center'
-  )),
-  
-  hidden(div(id='mainPage',
-             # ---- Fancy image input ---- 
-             actionButton("clearCookieBtn", "Clear Cookie and Logout"),
-             
-             shiny::fluidRow(
-               style = "margin-top: 20px;",
-               shiny::column(
-                 width = 10, offset = 1,
-                 card(
-                   title = div("Select an image of a product!", align = 'center'),
-                   shiny::fluidRow(
-                     column(
-                       width = 4, offset = 4,
-                       fileInputArea(
-                         "imageInput",
-                         label = "Tap to upload!",
-                         buttonLabel = "Upload a clear picture of the ingredients you have available!",
-                         multiple = FALSE
-                       ),
-                       shiny::tableOutput("files")
+  navbarPage(
+    title = "",
+    id = 'tabs',
+    position = 'fixed-bottom',
+    fluid = TRUE,
+    
+    tabPanel(
+      title = div(icon('home'), "Home"),
+      
+      hidden(div(id = "loginPage",
+                 h2("Welcome!"),
+                 hr(),
+                 fluidRow(
+                   column(width = 4, offset = 4,
+                          paste0("Since this is your first time here, you just need to create a username!",
+                                 " This will allow you to save your recipes and re-use them if you'd like to!"),
+                   ),
+                   hr(),
+                   strong('(You only need to do this once)')
+                 ),
+                 textInput("username", "Enter your username:"),
+                 actionButton("loginBtn", "Login"),
+                 align = 'center'
+      )),
+      
+      hidden(div(id='mainPage',
+                 # ---- Fancy image input ---- 
+                 # actionButton("clearCookieBtn", "Clear Cookie and Logout"),
+                 
+                 shiny::fluidRow(
+                   style = "margin-top: 20px;",
+                   shiny::column(
+                     width = 10, offset = 1,
+                     card(
+                       title = div("Select an image of a product!", align = 'center'),
+                       shiny::fluidRow(
+                         column(
+                           width = 4, offset = 4,
+                           fileInputArea(
+                             "imageInput",
+                             label = "Tap to upload!",
+                             buttonLabel = "Upload a clear picture of the ingredients you have available!",
+                             multiple = FALSE
+                           ),
+                           shiny::tableOutput("files")
+                         )
+                       )
                      )
                    )
-                 )
-               )
-             ),
-             # ---- end fancy ----
-             # selectInput(inputId = "select1", label = "Select which meal this is for",
-             #             choices = c('Breakfast','Brunch','Lunch','Dinner')),
-             # card(
-             #   radioGroupButtons(
-             #     inputId = "Id070",
-             #     label = "Select Which Meal",
-             #     choices = c("Breakfast", 
-             #                 "Lunch", "Dinner"),
-             #     justified = TRUE,
-             #     checkIcon = list(
-             #       yes = icon("ok", 
-             #                  lib = "glyphicon"))
-             #   )
-             # ),
-             # selectInput(inputId = "allergiesSelect", label = "Do you have food restrictions?",
-             #             choices = c("None", "Gluten Free", "Peanuts", "Fish","Lactose",
-             #                         "Vegetarian","Vegan"),
-             #             multiple = TRUE,
-             #             selected = "None"),
-             # actionButton(inputId = "generate", label = "Get Recipe!", class = 'btn-primary'),
-             
-             fluidRow(
-               column(width = 8, offset = 2,
-                      actionBttn(inputId = 'generate',
-                                 label = 'Get Recipe!',
-                                 color = 'primary',
-                                 icon = icon('utensils'),
-                                 style = 'jelly',
-                                 block = TRUE),
-                      br(),
-                      br(),
-               )
-             ),
-             
-             fluidRow(
-               column(
-                 width = 10, offset = 1,
-                 card(id = 'card1',
-                      h4("Recipe Name"),
-                      hr(),
-                      textOutput('recipeName'),
-                      align = 'center'
                  ),
-                 card(id = 'card2',
-                      h4("Recipe Ingredients"),
-                      hr(),
-                      div(uiOutput('recipeIngredients'), class = 'centered-list-container'),
-                      align = 'center'
+                 # ---- end fancy ----
+                 # selectInput(inputId = "select1", label = "Select which meal this is for",
+                 #             choices = c('Breakfast','Brunch','Lunch','Dinner')),
+                 # card(
+                 #   radioGroupButtons(
+                 #     inputId = "Id070",
+                 #     label = "Select Which Meal",
+                 #     choices = c("Breakfast", 
+                 #                 "Lunch", "Dinner"),
+                 #     justified = TRUE,
+                 #     checkIcon = list(
+                 #       yes = icon("ok", 
+                 #                  lib = "glyphicon"))
+                 #   )
+                 # ),
+                 # selectInput(inputId = "allergiesSelect", label = "Do you have food restrictions?",
+                 #             choices = c("None", "Gluten Free", "Peanuts", "Fish","Lactose",
+                 #                         "Vegetarian","Vegan"),
+                 #             multiple = TRUE,
+                 #             selected = "None"),
+                 # actionButton(inputId = "generate", label = "Get Recipe!", class = 'btn-primary'),
+                 
+                 fluidRow(
+                   column(width = 4, offset = 4,
+                          actionButton(inputId = 'generate',
+                                       label = 'Get Recipe!',
+                                       icon = icon('utensils'),
+                                       class = 'btn-primary-custom-full'),
+                          # actionBttn(inputId = 'generate',
+                          #            label = 'Get Recipe!',
+                          #            color = 'primary',
+                          #            icon = icon('utensils'),
+                          #            style = 'jelly',
+                          #            block = TRUE),
+                          actionButton(inputId = 'showRecent',
+                                       label = 'Show Your Latest Recipe!',
+                                       icon = icon('repeat'),
+                                       class = 'btn-primary-custom-full'),
+                          # actionBttn(inputId = 'showRecent',
+                          #            label = 'Show Your Last Recipe!',
+                          #            color = 'primary',
+                          #            icon = icon('repeat'),
+                          #            style = 'jelly',
+                          #            block = TRUE),
+                          # actionButton(inputId = 'disconnect',
+                          #              label = 'Disconnect',
+                          #              icon = icon('repeat'),
+                          #              class = 'btn-danger-custom-full'),
+                          # actionBttn(inputId = 'disconnect',
+                          #            label = 'Disconnect',
+                          #            color = 'danger',
+                          #            icon = icon('repeat'),
+                          #            style = 'jelly',
+                          #            block = TRUE),
+                          # verbatimTextOutput('debugging'),
+                          # textOutput('userLoggedIn'),
+                          br(),
+                          br(),
+                   )
                  ),
-                 card(id = 'card3',
-                      h4("Recipe Instructions"),
-                      hr(),
-                      div(uiOutput('recipeInstructions'), class = 'centered-list-container'),
-                      align = 'center'
+                 
+                 fluidRow(
+                   column(
+                     width = 10, offset = 1,
+                     card(id = 'card1',
+                          h4("Recipe Name"),
+                          hr(),
+                          textOutput('recipeName'),
+                          align = 'center'
+                     ),
+                     card(id = 'card2',
+                          h4("Recipe Ingredients"),
+                          hr(),
+                          div(uiOutput('recipeIngredients'), class = 'centered-list-container'),
+                          align = 'center'
+                     ),
+                     card(id = 'card3',
+                          h4("Recipe Instructions"),
+                          hr(),
+                          div(uiOutput('recipeInstructions'), class = 'centered-list-container'),
+                          align = 'center'
+                     ),
+                     card(id = 'card4',
+                          h4('Nutrition Estimates (per serving)'),
+                          hr(),
+                          div(uiOutput('nutritionEstimates'), class = 'centered-list-container'),
+                          align = 'center'
+                     )
+                   )
                  ),
-                 card(id = 'card4',
-                      h4('Nutrition Estimates (per serving)'),
-                      hr(),
-                      div(uiOutput('nutritionEstimates'), class = 'centered-list-container'),
-                      align = 'center'
-                 )
-               )
-             ),
-             # fluidRow(
-             #   column(width = 8, offset = 2,
-             #          actionBttn(inputId = 'saveButton',
-             #                     label = 'Save Recipe!',
-             #                     color = 'primary',
-             #                     icon = icon('floppy-disk'),
-             #                     style = 'jelly',
-             #                     block = TRUE),
-             #          actionBttn(inputId = 'loadButton',
-             #                     label = 'Load Recipe!',
-             #                     color = 'primary',
-             #                     icon = icon('floppy-disk'),
-             #                     style = 'jelly',
-             #                     block = TRUE),
-             #          verbatimTextOutput('savedRecipes')
-             #   )
-             # ),
-             
-             
-             align = 'center'
+                 # fluidRow(
+                 #   column(width = 8, offset = 2,
+                 #          actionBttn(inputId = 'saveButton',
+                 #                     label = 'Save Recipe!',
+                 #                     color = 'primary',
+                 #                     icon = icon('floppy-disk'),
+                 #                     style = 'jelly',
+                 #                     block = TRUE),
+                 #          actionBttn(inputId = 'loadButton',
+                 #                     label = 'Load Recipe!',
+                 #                     color = 'primary',
+                 #                     icon = icon('floppy-disk'),
+                 #                     style = 'jelly',
+                 #                     block = TRUE),
+                 #          verbatimTextOutput('savedRecipes')
+                 #   )
+                 # ),
+                 
+                 
+                 align = 'center'
+      )
+    )
+    
+  ),
+  
+  tabPanel(
+    title = div(icon('repeat'), "Past Recipes"),
+    h3('past recipes')
+    
   )
+  
+
   
   
   
@@ -400,6 +460,7 @@ server <- function(input, output, session) {
   shinyjs::hide('card2')
   shinyjs::hide('card3')
   shinyjs::hide('card4')
+  shinyjs::hide('showRecent')
   
   
   
@@ -456,8 +517,57 @@ server <- function(input, output, session) {
     if(input$cookie$name == 'username' && input$cookie$value != ""){
       shinyjs::hide('loginPage')
       shinyjs::show('mainPage')
+
       rv$username = input$cookie$value
-      print(rv$username)
+      
+      # output$userLoggedIn = renderText(rv$username)
+      
+      user_tracker = aws.s3::s3readRDS(object = 'users.rds', bucket = 'homechef-tracker')
+      latest_recipe = user_tracker$recipes[user_tracker$username == rv$username][[1]][[length(user_tracker$recipes[user_tracker$username == rv$username][[1]])]]
+      # latest_recipe = user_tracker$recipes[user_tracker$username == 'newUser'][[1]][[length(user_tracker$recipes[user_tracker$username == 'newUser'][[1]])]]
+      
+      # output$debugging = renderText(toString(latest_recipe))
+      
+
+      # print(rv$username)
+      # print(latest_recipe)
+
+      if(!is.na(latest_recipe[[1]])){
+        shinyjs::show('showRecent')
+        
+        latest_recipe_name = latest_recipe$name
+        latest_recipe_ingredients = latest_recipe$ingredients
+        latest_recipe_instructions = latest_recipe$instructions
+        latest_recipe_estimates = latest_recipe$estimates
+        
+        output$recipeName = renderText(latest_recipe_name)
+        output$recipeIngredients = renderUI(
+          tags$ul(
+            class = 'centered-list',
+            lapply(latest_recipe_ingredients, function(ingredient){
+              tags$li(ingredient)
+            })
+          )
+        )
+        output$recipeInstructions = renderUI(
+          tags$ul(
+            class = 'centered-list',
+            lapply(latest_recipe_instructions, function(instruction){
+              tags$li(instruction)
+            })
+          )
+        )
+        
+        output$nutritionEstimates = renderUI(
+          tags$ul(
+            class = 'centered-list',
+            lapply(latest_recipe_estimates, function(estimate){
+              tags$li(estimate)
+            })
+          )
+        )
+      }else{}
+
     }else{
       shinyjs::hide('mainPage')
       shinyjs::show('loginPage')
@@ -479,7 +589,7 @@ server <- function(input, output, session) {
       
       path = input$imageInput$datapath
       
-      vision_prompt = paste0("Please accurately list the ingredients in this picture. Your response should be in the format: *(ingredient)* and end the response with *END*")
+      vision_prompt = paste0("Please accurately list the ingredients in this picture. Your response should be in the format: *(ingredient)*")
       vision_response = gemini_vision(vision_prompt, path)
       
       
@@ -488,7 +598,7 @@ server <- function(input, output, session) {
       print(vision_response)
       
       
-      ingredients_ind = str_match_all(string = vision_response, pattern = "\\*\\s(.*)\\n|\\* (.+?)\\*END")[[1]][,2]
+      ingredients_ind = str_match_all(string = vision_response, pattern = "(?m)^(?:\\*\\s*)?(.*?)(?:\\s*\\*)?$")[[1]][,2]
       ingredients_for_mod = paste(ingredients_ind, collapse = ", ")
       print(ingredients_for_mod)
 
@@ -544,36 +654,42 @@ server <- function(input, output, session) {
     # })
     
     # You can now use ingredient_values for further processing
-    # ingredients = (paste(ingredient_values, collapse = ", "))
+    # ingredients = (paste(ingredients_for_mod, collapse = ", "))
     ingredients = input$updatedIngredients
     
     shinybusy::show_modal_spinner(spin = 'semipolar',
                                   color = 'white',
                                   text = 'PREPARE TO FEAST!')
     
-    recipe_prompt = paste0("Using strictly the following ingredients, give me a recipe for ",'dinner',".",
+    recipe_prompt = paste0("Using strictly the following ingredients, give me a recipe.",
                            " The ingredients are: ",ingredients,". ",
+                           " You may only use the ingredients provided, do not use anything else. ",
                            "Please give the amount of each ingredient to use as well.",
-                           " Return your response in the format: \\n **(name of recipe)** \\n\\n",
-                           "**INGREDIENTS:**\\n\\n",
-                           "\\n\\n\\n *(recipe item)* \\n\\n",
+                           " Return your response in the format: \\n **(name of recipe)** \\n",
+                           "**INGREDIENTS:**\\n",
+                           "\\n\\n *(recipe item)* \\n\\n",
                            "\\n\\n **INSTRUCTIONS** \\n\\n",
                            " (Instructions on how to cook numbered like \\n digit.",
                            " Please end the last step with the words 'END RECIPE'.")
+    print(recipe_prompt)
     recipe_response = gemini(recipe_prompt)
     
-    recipe_name = str_match(string = recipe_response, pattern = "\\*\\*(.*?)\\*\\*")[,2]
-    recipe_ingredients = trimws(str_match_all(string = recipe_response, pattern = "\\* ([^\\*]+)")[[1]][,2])
-    
-    
-    
-    
-    
-    
-    
-    recipe_instructions = str_match_all(string = recipe_response, pattern = "\\d+\\.\\s(.*)\\n")[[1]][,2]
-    
     print(recipe_response)
+    
+    recipe_name = str_match(string = recipe_response, pattern = "\\*\\*(.*?)\\*\\*")[,2]
+    
+    ingredients_section = str_match(string = recipe_response, pattern = "(?s)INGREDIENTS(.*)INSTRUCTIONS")[,2]
+    recipe_ingredients = trimws(str_match_all(string = ingredients_section, pattern = "\\* ([^\\*]+)")[[1]][,2])
+    recipe_ingredients = gsub(pattern = '\n', replacement = '', x = recipe_ingredients, fixed = TRUE)
+    recipe_ingredients = gsub(pattern = '\\n', replacement = '', x = recipe_ingredients, fixed = TRUE)
+    print(recipe_ingredients)
+    
+    instructions_section = str_match(string = recipe_response, pattern = "(?s)INSTRUCTIONS(.*)END RECIPE")[,2]
+    recipe_instructions = trimws(str_match_all(string = instructions_section, pattern = "\\d+\\.(.*?)\\n")[[1]][,2])
+    recipe_instructions <- gsub("\\s*END RECIPE\\s*$", "", recipe_instructions)
+    print(recipe_instructions)
+    
+    
     
     nutrition_info = GetNutrition(recipe_ingredients)
     
@@ -642,23 +758,79 @@ server <- function(input, output, session) {
     
     # nutrition_disclaimer = trimws(str_match(string = nutrition_response, pattern = "Disclaimer:\\*\\*(.*?)\\n\\nEND")[,2])
     
-    # recipe_list = list(
-    #   name = recipe$name,
-    #   ingredients = recipe_ingredients,
-    #   instructions = recipe_instructions,
-    #   estimates = estimates_text
-    # )
+    
+    user_tracker = aws.s3::s3readRDS(object = 'users.rds', bucket = 'homechef-tracker')
+    # user = 'newUser'
+    
+    recipe_list = list(
+      name = recipe_name,
+      ingredients = recipe_ingredients,
+      instructions = recipe_instructions,
+      estimates = estimates_text
+    )
+    
+    # output$debugging = renderText(toString(user_tracker$recipes[user_tracker$username == 'newUser'] == 'NA'))
+    # output$debugging = renderText(toString(user_tracker$recipes[user_tracker$username == 'nick']))
+    # user_tracker$recipes[user_tracker$username == rv$username] == 'NA'
+    
+    if(is.na(user_tracker$recipes[user_tracker$username == rv$username])){
+      # output$debugging = renderText("We are within the code for starting a new list")
+      user_tracker$recipes[user_tracker$username == rv$username] = list(list(recipe_list))
+
+      saveRDS(user_tracker, file = paste0(tempdir(), "/tmp.rds"))
+
+      put_object(
+        file = file.path(tempdir(), "tmp.rds"),
+        object = paste0("users.rds"),
+        bucket = paste0("homechef-tracker")
+      )
+      # output$debugging = renderText("We started a new entry for user")
+    }else{
+      # output$debugging = renderText("We are within the code for adding to current list")
+      
+      # Retrieve the existing recipes list
+      existing_recipes <- user_tracker$recipes[user_tracker$username == rv$username][[1]]
+
+      # Append the new recipe to the existing list
+      updated_recipes <- append(existing_recipes, list(recipe_list))
+
+      # Update the data frame with the new list of recipes
+      user_tracker$recipes[user_tracker$username == rv$username] <- list(updated_recipes)
+
+
+      saveRDS(user_tracker, file = paste0(tempdir(), "/tmp.rds"))
+
+      put_object(
+        file = file.path(tempdir(), "tmp.rds"),
+        object = paste0("users.rds"),
+        bucket = paste0("homechef-tracker")
+      )
+      
+      # output$debugging = renderText("We added to existing list")
+    }
+    
+
     
     
   })
   
   
-  observeEvent(input$clearCookieBtn, {
-    session$sendCustomMessage(type = "clearCookie", list(name = "username"))
-    shinyjs::hide('mainPage')
-    shinyjs::show('loginPage')
+  # observeEvent(input$clearCookieBtn, {
+  #   session$sendCustomMessage(type = "clearCookie", list(name = "username"))
+  #   shinyjs::hide('mainPage')
+  #   shinyjs::show('loginPage')
+  # })
+  
+  observeEvent(input$showRecent, {
+    shinyjs::show('card1')
+    shinyjs::show('card2')
+    shinyjs::show('card3')
+    shinyjs::show('card4')
   })
 
+  # observeEvent(input$disconnect, {
+  #   session$close()
+  # })
   
   
   

@@ -8,7 +8,7 @@ gemini <- function(prompt,
                    temperature=0.5,
                    max_output_tokens=1024,
                    api_key=Sys.getenv("GEMINI_API_KEY"),
-                   model = "gemini-1.0-pro") {
+                   model = "gemini-1.5-pro-latest") {
   
   if(nchar(api_key)<1) {
     api_key <- readline("Paste your API key here: ")
@@ -94,7 +94,7 @@ gemini_vision <- function(prompt,
                           temperature=0.1,
                           max_output_tokens=4096,
                           api_key=Sys.getenv("GEMINI_API_KEY"),
-                          model = "gemini-pro-vision") {
+                          model = "gemini-1.5-pro-latest") {
   
   if(nchar(api_key)<1) {
     api_key <- readline("Paste your API key here: ")
@@ -236,6 +236,7 @@ GetNutrition <- function(recipe_ingredients){
                             paste(recipe_ingredients, collapse = ", "),
                             ". Can you please give me an esimate amount of how many calories, ",
                             "protein, carbs and fat are in a serving of this meal.",
+                            " I understand you cannot give an accurate answer, so please just give an estimate.",
                             " Format your response as follows: ",
                             "\\n **TOTAL CALORIES:** (total calories in meal)\\n",
                             "\\n **TOTAL PROTEIN:** (total protein in meal)\\n",
